@@ -357,4 +357,59 @@ function Xen.Window(config)
     function window:Destroy() cleanup();gui:Destroy() end
     return window
 end
-return Xen
+-- Obsidian clients keep their original method signatures, registries and addons.
+-- The standalone Xen.Window(config) path does not download Obsidian.
+local obsidianURL = "https://raw.githubusercontent.com/deividcomsono/Obsidian/0467c88f7cca3e2cf8ae31b993ba25b239448a98/Library.lua"
+local legacy, pending
+local function loadObsidian()
+    if legacy then return legacy end
+    if pending then
+        local ok, result = pending.Event:Wait()
+        if not ok then error(result, 2) end
+        return result
+    end
+
+    local ready = Instance.new("BindableEvent")
+    pending = ready
+    local ok, result = pcall(function()
+        local source = game:HttpGet(obsidianURL)
+        local chunk, err = loadstring(source, "@Movehub/Obsidian")
+        assert(chunk, err)
+        local library = chunk()
+        library.Scheme.BackgroundColor = bg
+        library.Scheme.MainColor = rail
+        library.Scheme.AccentColor = Color3.fromRGB(255, 58, 78)
+        library.Scheme.OutlineColor = hover
+        library.Scheme.FontColor = white
+        library:UpdateColorsUsingRegistry()
+
+        local createWindow = library.CreateWindow
+        function library:CreateWindow(info)
+            local settings = table.clone(info or {})
+            if settings.Animations == nil then
+                settings.Animations = {ToggleWindow=true, TabSwitch=true, Groupbox=true, Dropdown=true, KeyPicker=true}
+            end
+            if settings.Font == nil then settings.Font = Enum.Font.Gotham end
+            return createWindow(library, settings)
+        end
+        return library
+    end)
+    if ok then legacy = result end
+    pending = nil
+    ready:Fire(ok, result)
+    task.defer(function() ready:Destroy() end)
+    if not ok then error("Movehub: could not initialize Obsidian: " .. tostring(result), 2) end
+    return result
+end
+
+-- In Obsidian, Window is a state field assigned by CreateWindow. In Xen it is
+-- the constructor. Choose the contract on first use of an Obsidian member.
+return setmetatable({}, {
+    __index = function(_, key)
+        if key == "Window" and not legacy and not pending then return Xen.Window end
+        return loadObsidian()[key]
+    end,
+    __newindex = function(_, key, value)
+        loadObsidian()[key] = value
+    end,
+})
