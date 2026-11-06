@@ -5,10 +5,10 @@ local RunService = game:GetService("RunService")
 local Tween = game:GetService("TweenService")
 local Xen = {}
 
-local bg = Color3.fromRGB(150,22,39)
-local rail = Color3.fromRGB(220,59,76)
-local panel = Color3.fromRGB(104,17,32)
-local hover = Color3.fromRGB(80,16,27)
+local bg = Color3.fromRGB(19,19,22)
+local rail = Color3.fromRGB(25,25,29)
+local panel = Color3.fromRGB(30,30,35)
+local hover = Color3.fromRGB(43,43,49)
 local white = Color3.fromRGB(242,242,246)
 local muted = Color3.fromRGB(163,163,174)
 local function make(kind, parent, props)
@@ -124,13 +124,13 @@ function Xen.Window(config)
     resize()
     local sidebar=box(shell,rail,UDim2.new(0,154,1,0))
     local brand=text(sidebar,config.Title or "Xen",23,true)
-    brand.TextColor3=Color3.new(0,0,0)
+    brand.TextColor3=accent
     brand.Position=UDim2.fromOffset(17,0);brand.Size=UDim2.fromOffset(130,62)
     local nav=make("ScrollingFrame",sidebar,{Position=UDim2.fromOffset(8,68),Size=UDim2.new(1,-16,1,-122),
         BackgroundTransparency=1,BorderSizePixel=0,ScrollBarThickness=2,CanvasSize=UDim2.new(),AutomaticCanvasSize=Enum.AutomaticSize.Y})
     stack(nav,4)
     local profile=text(sidebar,config.Profile or Players.LocalPlayer.DisplayName,13,true)
-    profile.TextColor3=Color3.new(0,0,0)
+    profile.TextColor3=white
     profile.Position=UDim2.new(0,17,1,-44); profile.Size=UDim2.fromOffset(130,30)
     local top=box(shell,bg,UDim2.new(1,-154,0,50),UDim2.fromOffset(154,0))
     top.Active=true;brand.Active=true
@@ -139,7 +139,7 @@ function Xen.Window(config)
     local hide=text(top,"−",22,true,true)
     hide.Position=UDim2.new(1,-42,0,8);hide.Size=UDim2.fromOffset(32,32);hide.TextXAlignment=Enum.TextXAlignment.Center
     local launcher=text(gui,config.Title or "Xen",14,true,true)
-    launcher.BackgroundTransparency=0;launcher.BackgroundColor3=rail;launcher.TextColor3=Color3.new(0,0,0);round(launcher)
+    launcher.BackgroundTransparency=0;launcher.BackgroundColor3=rail;launcher.TextColor3=accent;round(launcher)
     launcher.TextXAlignment=Enum.TextXAlignment.Center;launcher.Position=UDim2.fromOffset(10,10)
     launcher.Size=UDim2.fromOffset(88,34);launcher.Visible=false
     local opened = true
@@ -226,7 +226,7 @@ function Xen.Window(config)
     end
     local function selectTab(tab)
         for _,t in ipairs(tabs) do
-            animate(t.btn,{BackgroundTransparency=t==tab and 0 or 1,TextColor3=t==tab and white or Color3.new(0,0,0)})
+            animate(t.btn,{BackgroundTransparency=t==tab and 0 or 1,TextColor3=t==tab and accent or muted})
             for _,p in ipairs(t.pages) do p.btn.Visible=t==tab end
         end
         activeTab=tab;strip.CanvasPosition=Vector2.zero
@@ -236,7 +236,7 @@ function Xen.Window(config)
         local btn=text(nav,"    "..name,14,true,true);btn.Size=UDim2.new(1,-3,0,34);btn.BackgroundColor3=selected;btn.AutoButtonColor=false;round(btn)
         local tab={btn=btn,pages={}};table.insert(tabs,tab);btn.LayoutOrder=#tabs
         btn.Activated:Connect(function() selectTab(tab) end)
-        if not activeTab then selectTab(tab) else btn.TextColor3=Color3.new(0,0,0) end
+        if not activeTab then selectTab(tab) else btn.TextColor3=muted end
         function tab:Page(title)
             local b=text(strip,title,13,true,true);b.Size=UDim2.fromOffset(100,30);b.TextXAlignment=Enum.TextXAlignment.Center
             b.TextColor3=muted;b.Visible=activeTab==tab;b.LayoutOrder=#tab.pages+1
@@ -249,14 +249,14 @@ function Xen.Window(config)
             b.Activated:Connect(function() selectPage(page) end)
             if activeTab==tab and not activePage then selectPage(page) end
             function page:Section(label)
-                local frame=box(scroll,panel,UDim2.new(1,-6,0,0));round(frame,7)
+                local frame=box(scroll,rail,UDim2.new(1,-6,0,0));round(frame,7)
                 frame.AutomaticSize=Enum.AutomaticSize.Y;frame.LayoutOrder=#page.groups+1
                 make("UIPadding",frame,{PaddingLeft=UDim.new(0,10),PaddingRight=UDim.new(0,10),PaddingBottom=UDim.new(0,8)})
                 stack(frame,3)
                 local header=text(frame,label,14,true);header.Size=UDim2.new(1,0,0,34)
                 local group={rows={},frame=frame};table.insert(page.groups,group)
                 local function row(title,height)
-                    local r=box(frame,panel,UDim2.new(1,0,0,height));r.LayoutOrder=#group.rows+1
+                    local r=box(frame,rail,UDim2.new(1,0,0,height));r.LayoutOrder=#group.rows+1
                     table.insert(group.rows,{row=r,key=string.lower(label.." "..title)})
                     filter();return r
                 end
